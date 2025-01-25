@@ -1,62 +1,69 @@
 package testcases;
 
 import base.BaseTest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import pages.HomePage;
 import pages.SignupPage;
 import pages.AccountPage;
-
+import utils.ConfigReader;
+import utils.ExcelReader;
+//import com.relevantcodes.extentreports.ExtentReports;
+//import com.relevantcodes.extentreports.ExtentTest;
+//import com.relevantcodes.extentreports.LogStatus;
 import java.util.Random;
 
 public class RegisterUserTest extends BaseTest {
 
-    @Test
-    public void testRegisterUser() {
+    private static final Logger logger = LogManager.getLogger(RegisterUserTest.class);
+
+    @DataProvider(name = "RegisterData")
+    public Object[][] getUserData() throws Exception {
+        String filePath = "/Users/rafeqfiad/IdeaProjects/AutomationProject/src/test/resources/RegisterData.xlsx";
+        String sheetName = "RegisterData";
+        return ExcelReader.readExcelData(filePath, sheetName);
+    }
+
+    @Test(dataProvider = "RegisterData")
+    public void testRegisterUser(String name, String email, String password, String address,
+                                 String country, String state, String city, String zipcode, String phone) {
+        String websiteUrl = ConfigReader.getWebsiteUrl();
         Random random = new Random();
+        int randomInRange = random.nextInt(50) + 50;
+        String modifiedEmail = email.replace("@", randomInRange + "@");
 
-        // Generate a random number between 50 (inclusive) and 100 (exclusive)
-        int min = 50;
-        int max = 100;
-        int randomInRange = random.nextInt(max - min) + min;
-        // Step 1: Navigate to URL
-        driver.get("http://automationexercise.com");
+        try {
+            logger.info("Starting test: Register User");
 
-        // Step 2: Verify that home page is visible
-        HomePage homePage = new HomePage(driver);
-        Assert.assertTrue(homePage.isHomePageVisible(), "Home page is not visible");
+            driver.get(websiteUrl);
+            logger.info("Navigated to URL: " + websiteUrl);
+            logger.info("Home page");
+            HomePage homePage = new HomePage(driver);
+            Assert.assertTrue(homePage.isHomePageVisible(), "Home page is not visible");
+            homePage.clickSignupLogin();
 
-        // Step 3: Click 'Signup / Login' button
-        homePage.clickSignupLogin();
+            logger.info("New User Signup!");
+            SignupPage signupPage = new SignupPage(driver);
+            Assert.assertTrue(signupPage.isNewUserSignupVisible(), "'New User Signup!' is not visible");
+            signupPage.enterNameAndEmail(name, modifiedEmail);
 
-        // Step 4: Verify 'New User Signup!' is visible
-        SignupPage signupPage = new SignupPage(driver);
-        Assert.assertTrue(signupPage.isNewUserSignupVisible(), "'New User Signup!' is not visible");
+            signupPage.clickSignupButton();
 
-        // Step 5: Enter name and email
-        signupPage.enterNameAndEmail("John Doe", randomInRange+"john.doe@example.com");
+            AccountPage accountPage = new AccountPage(driver);
+            Assert.assertTrue(accountPage.isAccountInfoVisible(), "'Enter Account Information' is not visible");
+            logger.info("Enter Account Information");
+            accountPage.enterAccountInfo(password, name.split(" ")[0], name.split(" ")[1], address, country, state, city, zipcode, phone);
+            accountPage.clickCreateAccount();
 
-        // Step 6: Click 'Signup' button
-        signupPage.clickSignupButton();
+            Assert.assertTrue(accountPage.isAccountCreatedVisible(), "'ACCOUNT CREATED!' is not visible");
+            logger.info("Test case executed successfully");
 
-        // Step 7: Verify 'Enter Account Information' is visible
-        AccountPage accountPage = new AccountPage(driver);
-        Assert.assertTrue(accountPage.isAccountInfoVisible(), "'Enter Account Information' is not visible");
-
-        // Step 8: Fill account information and create account
-        accountPage.enterAccountInfo("password123", "John", "Doe", "123 Test Street", "United States", "California", "Los Angeles", "90001", "1234567890");
-        accountPage.clickCreateAccount();
-
-        // Step 9: Verify 'Account Created!' is visible
-        Assert.assertTrue(accountPage.isAccountCreatedVisible(), "'ACCOUNT CREATED!' is not visible");
-
-        // Step 10: Click 'Continue'
-       // accountPage.clickContinue();
-
-        // Step 11: Delete account
-       // accountPage.clickDeleteAccount();
-
-        // Step 12: Verify 'Account Deleted!' is visible
-        //Assert.assertTrue(accountPage.isAccountDeletedVisible(), "'ACCOUNT DELETED!' is not visible");
+        } catch (AssertionError | Exception e) {
+            logger.error("Test case failed: " + e.getMessage(), e);
+            throw e;
+        }
     }
 }

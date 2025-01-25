@@ -41,9 +41,9 @@ public class AccountPage {
         return driver.findElement(accountCreatedHeader).isDisplayed();
     }
 
-//    public void clickContinue() {
-//        driver.findElement(continueButton).click();
-//    }
+    public void clickContinue() {
+        driver.findElement(continueButton).click();
+    }
 
     public void clickDeleteAccount() {
         driver.findElement(deleteAccountButton).click();

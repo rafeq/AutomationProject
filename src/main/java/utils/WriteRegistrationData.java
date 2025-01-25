@@ -17,8 +17,7 @@ public class WriteRegistrationData {
 
             // Create header row
             String[] headers = {
-                    "Name", "Email", "Password", "Date of Birth", "First name", "Last name",
-                    "Address", "Country", "State", "City", "Zip Code", "Mobile Number"
+                    "Name", "Email", "Password", "Address", "Country", "State", "City", "Zip Code", "Mobile Number"
             };
 
             Row headerRow = sheet.createRow(0);
@@ -28,8 +27,6 @@ public class WriteRegistrationData {
 
             // Sample data
             String[][] sampleData = {
-                    {"Test User", "testuser@example.com", "password123", "01/01/2000", "First name", "Last name",
-                            "123 Test Street, Test Company", "United States", "California", "Los Angeles", "90001", "051111111111"},
                     {"Jane Doe", "janedoe@example.com", "password456", "15/05/1995", "First name", "Last name",
                             "456 Jane Street, P.O. Box 789", "Canada", "Ontario", "Toronto", "M5H 2N2", "9876543210"}
             };

@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 import pages.AccountPage;
 import pages.HomePage;
 import pages.LoginPage;
+import utils.ConfigReader;
 import utils.WebDriverManager;
 
 public class LoginTest {
@@ -16,11 +17,12 @@ public class LoginTest {
     HomePage homePage;
     LoginPage loginPage;
     AccountPage accountPage;
-
+    String websiteUrl = ConfigReader.getWebsiteUrl();
+    String browserType = ConfigReader.getBrowserType();
     @BeforeMethod
     public void setUp() {
         driver = WebDriverManager.getDriver();
-        driver.get("http://automationexercise.com");
+        driver.get(websiteUrl);
 
         homePage = new HomePage(driver);
         loginPage = new LoginPage(driver);
@@ -39,7 +41,7 @@ public class LoginTest {
         Assert.assertTrue(loginPage.isLoginPageVisible(), "'Login to your account' is not visible");
 
         // Step 6: Enter correct email and password
-        loginPage.login("123testuser@example.com", "password123");
+        loginPage.login("74john.doe@example.com", "password123");
 
         // Step 8: Verify 'Logged in as username' is visible
         Assert.assertTrue(loginPage.isLoggedInAsVisible(), "'Logged in as username' is not visible");

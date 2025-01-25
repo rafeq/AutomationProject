@@ -1,0 +1,12 @@
+2025-01-25 14:38:57 [main] INFO  testcases.RegisterUserTest - Starting test: Register User
+2025-01-25 14:39:02 [main] INFO  testcases.RegisterUserTest - Navigated to URL: http://automationexercise.com
+2025-01-25 14:39:02 [main] INFO  testcases.RegisterUserTest - Verified that home page is visible
+2025-01-25 14:39:03 [main] INFO  testcases.RegisterUserTest - Clicked 'Signup / Login' button
+2025-01-25 14:39:03 [main] INFO  testcases.RegisterUserTest - Verified 'New User Signup!' is visible
+2025-01-25 14:39:03 [main] INFO  testcases.RegisterUserTest - Entered name: John Doe and email: 78john.doe@example.com
+2025-01-25 14:39:04 [main] INFO  testcases.RegisterUserTest - Clicked 'Signup' button
+2025-01-25 14:39:04 [main] INFO  testcases.RegisterUserTest - Verified 'Enter Account Information' is visible
+2025-01-25 14:39:04 [main] INFO  testcases.RegisterUserTest - Entered account information successfully
+2025-01-25 14:39:05 [main] INFO  testcases.RegisterUserTest - Clicked 'Create Account' button
+2025-01-25 14:39:05 [main] INFO  testcases.RegisterUserTest - Verified 'Account Created!' is visible
+2025-01-25 14:39:05 [main] INFO  testcases.RegisterUserTest - Test case executed successfully
