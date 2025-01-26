@@ -1,10 +1,11 @@
 package base;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.io.FileHandler;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -13,14 +14,18 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import utils.ExcelUtils;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Random;
 
 public class BaseTest {
     protected WebDriver driver;
     protected WebDriverWait wait;
-   // ExcelUtils excel;
+    protected static final Logger logger = LogManager.getLogger(BaseTest.class);
+
+    // ExcelUtils excel;
 
     @BeforeMethod
     public void setUp() {
@@ -33,6 +38,33 @@ public class BaseTest {
 
 
     }
+
+    protected String attachScreenshot() {
+        TakesScreenshot ts = (TakesScreenshot) driver;
+        File source = ts.getScreenshotAs(OutputType.FILE);
+
+        // Define the screenshot folder path
+        String screenshotDirPath = System.getProperty("user.dir") + "/screenshots";
+        File screenshotDir = new File(screenshotDirPath);
+
+        // Check and create the folder if it doesn't exist
+        if (!screenshotDir.exists()) {
+            screenshotDir.mkdir(); // Create the directory
+        }
+
+        // Define the full screenshot file path
+        String screenshotPath = screenshotDirPath + "/" + System.currentTimeMillis() + ".png";
+
+        try {
+            FileHandler.copy(source, new File(screenshotPath));
+            logger.info("Screenshot captured: " + screenshotPath);
+        } catch (IOException ioException) {
+            logger.error("Failed to save screenshot: " + ioException.getMessage(), ioException);
+        }
+
+        return screenshotPath;
+    }
+
 }
 
 
