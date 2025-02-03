@@ -20,6 +20,7 @@ import org.testng.annotations.Test;
 import pages.CartPage;
 import pages.HomePage;
 import utils.ConfigReader;
+import utils.ScreenRecording;
 import utils.WebDriverManager;
 
 import java.io.File;
@@ -29,15 +30,19 @@ public class AddToCartFromRecommendedItemsTest extends BaseTest {
     private static final Logger logger = LogManager.getLogger(AddToCartFromRecommendedItemsTest.class);
     private static ExtentReports extentReports;
     private ExtentTest extentTest;
-    String websiteUrl = ConfigReader.getWebsiteUrl();
-    String browserType = ConfigReader.getBrowserType();
-    private WebDriver driver;  // Ensure WebDriver is initialized correctly
+    private WebDriver driver;
+    private ScreenRecording screenRecorder;
 
-    // Initialize ExtentReports
+    private final String websiteUrl = ConfigReader.getWebsiteUrl();
+    private final String browserType = ConfigReader.getBrowserType();
+
     @BeforeMethod
     public void setUp() {
-        // Setting up WebDriver and ExtentReports
-        driver = WebDriverManager.getDriver();  // Ensure driver is initialized here
+        // Initialize WebDriver
+        driver = WebDriverManager.getDriver();
+        logger.info("Browser initialized: " + browserType);
+
+        // Initialize ExtentReports
         ExtentSparkReporter sparkReporter = new ExtentSparkReporter("extent-reports/AddToCartFromRecommendedItemsTestReport.html");
         extentReports = new ExtentReports();
         extentReports.attachReporter(sparkReporter);
@@ -46,88 +51,104 @@ public class AddToCartFromRecommendedItemsTest extends BaseTest {
         sparkReporter.config().setTheme(Theme.STANDARD);
 
         extentReports.setSystemInfo("OS", System.getProperty("os.name"));
-        extentReports.setSystemInfo("Tester", "Your Name");
+        extentReports.setSystemInfo("Tester", "Rafeek");
         extentReports.setSystemInfo("Browser", browserType);
 
         extentTest = extentReports.createTest("Add to Cart from Recommended Items Test");
 
-        driver.get(websiteUrl);  // Navigate to URL in the setup
-        logger.info("Navigated to the website: " + websiteUrl);
+        // Navigate to the website
+        driver.get(websiteUrl);
+        logger.info("Navigated to: " + websiteUrl);
+
+        // Start screen recording
+        screenRecorder = new ScreenRecording();
+        screenRecorder.startRecording();
     }
 
     @Test
     public void testAddToCartFromRecommendedItems() {
         try {
-            // Step 2: Verify that home page is visible successfully
+            // Initialize HomePage
             HomePage homePage = new HomePage(driver);
-            Assert.assertTrue(homePage.isHomePageVisible(), "Home page is not visible");
+
+            // Verify home page visibility
+            Assert.assertTrue(homePage.isHomePageVisible(), "Home page is not visible.");
             extentTest.pass("Home page is visible.");
-            logger.info("Home page is visible.");
+            logger.info("Verified home page visibility.");
 
-            // Step 3: Scroll to bottom of page
+            // Scroll to Recommended Items section
             homePage.scrollToRecommendedItems();
-            extentTest.info("Scrolled to recommended items section.");
-            logger.info("Scrolled to recommended items section.");
-
-            // Step 4: Verify 'RECOMMENDED ITEMS' are visible
-            Assert.assertTrue(homePage.isRecommendedItemsVisible(), "'RECOMMENDED ITEMS' are not visible");
+            Assert.assertTrue(homePage.isRecommendedItemsVisible(), "'RECOMMENDED ITEMS' section is not visible.");
             extentTest.pass("'RECOMMENDED ITEMS' section is visible.");
-            logger.info("'RECOMMENDED ITEMS' section is visible.");
+            logger.info("Scrolled to and verified 'RECOMMENDED ITEMS' section.");
 
-            // Step 5: Click on 'Add To Cart' on Recommended product
+            // Add recommended product to cart
             homePage.clickAddToCartOnRecommendedItem();
             extentTest.info("Clicked 'Add To Cart' on a recommended product.");
-            logger.info("Clicked 'Add To Cart' on a recommended product.");
+            logger.info("Added recommended item to the cart.");
 
-            // Step 6: Click on 'View Cart' button
+            // Navigate to the Cart page
             homePage.clickViewCart();
-            extentTest.info("Clicked 'View Cart'.");
-            logger.info("Clicked 'View Cart'.");
+            extentTest.info("Clicked 'View Cart' button.");
+            logger.info("Navigated to the cart page.");
 
-            // Step 7: Verify that product is displayed in cart page
+            // Verify the product is added to the cart
             CartPage cartPage = new CartPage(driver);
-            Assert.assertTrue(cartPage.isProductInCart(), "Product is not displayed in the cart page");
-            extentTest.pass("Product is successfully added to the cart.");
-            logger.info("Product is successfully added to the cart.");
+            Assert.assertTrue(cartPage.isProductInCart(), "Product is not displayed in the cart.");
+            extentTest.pass("Verified product is displayed in the cart.");
+            logger.info("Product successfully added to cart.");
 
         } catch (Exception e) {
-            logger.error("Error encountered during test execution", e);
-            extentTest.fail("Test failed due to an exception",
-                    MediaEntityBuilder.createScreenCaptureFromPath(takeScreenshot("testAddToCartFromRecommendedItems_Failure")).build());
-            Assert.fail("Test failed due to an exception.");
+            handleTestFailure(e, "testAddToCartFromRecommendedItems");
         }
     }
 
     @AfterMethod
     public void tearDown(ITestResult result) {
-        if (driver != null) {
-            if (ITestResult.FAILURE == result.getStatus()) {
-                String screenshotPath = takeScreenshot(result.getName() + "_Failure");
-                extentTest.fail("Test failed", MediaEntityBuilder.createScreenCaptureFromPath(screenshotPath).build());
+        try {
+            // Stop screen recording
+            screenRecorder.stopRecording();
+
+            // Handle test results
+            if (result.getStatus() == ITestResult.FAILURE) {
+                String screenshotPath = takeScreenshot(result.getName());
+                String videoPath = screenRecorder.getVideoFile().getAbsolutePath();
+
+                extentTest.fail("Test failed: " + result.getThrowable().getMessage(),
+                        MediaEntityBuilder.createScreenCaptureFromPath(screenshotPath).build());
+                extentTest.fail("Test execution video:",
+                        MediaEntityBuilder.createScreenCaptureFromPath(videoPath).build());
+
+                logger.error("Test failed. Screenshot and video captured.");
+            } else if (result.getStatus() == ITestResult.SUCCESS) {
+                extentTest.pass("Test passed successfully.");
             }
-            logger.info("Test execution complete.");
-            extentReports.flush();  // Ensure the report is written to disk
-            WebDriverManager.quitDriver();  // Close the WebDriver after the test
-        } else {
-            logger.error("WebDriver is null, unable to take screenshot or close the driver.");
+        } catch (Exception e) {
+            logger.error("Error during test tear down: ", e);
+        } finally {
+            // Flush ExtentReports and quit WebDriver
+            extentReports.flush();
+            WebDriverManager.quitDriver();
+            logger.info("Test execution completed. Resources cleaned up.");
         }
     }
 
     private String takeScreenshot(String testName) {
-        if (driver != null) {
-            TakesScreenshot ts = (TakesScreenshot) driver;
-            File screenshot = ts.getScreenshotAs(OutputType.FILE);
-            String screenshotPath = System.getProperty("user.dir") + "/screenshots/" + testName + ".png";
-            try {
-                FileHandler.copy(screenshot, new File(screenshotPath));
-                logger.info("Screenshot taken for test: " + testName);
-            } catch (IOException e) {
-                logger.error("Failed to take screenshot", e);
-            }
-            return screenshotPath;
-        } else {
-            logger.error("Driver is null, unable to take screenshot.");
-            return "";
+        String screenshotPath = System.getProperty("user.dir") + "/screenshots/" + testName + ".png";
+        try {
+            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            FileHandler.copy(screenshot, new File(screenshotPath));
+            logger.info("Screenshot saved: " + screenshotPath);
+        } catch (IOException e) {
+            logger.error("Failed to save screenshot.", e);
         }
+        return screenshotPath;
+    }
+
+    private void handleTestFailure(Exception e, String testName) {
+        logger.error("Error during test execution: ", e);
+        extentTest.fail("Test failed due to an exception: " + e.getMessage(),
+                MediaEntityBuilder.createScreenCaptureFromPath(takeScreenshot(testName)).build());
+        Assert.fail("Test failed due to an exception: " + e.getMessage());
     }
 }

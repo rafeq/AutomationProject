@@ -37,7 +37,7 @@ public class RegisterUserTest extends BaseTest {
         extentReports = new ExtentReports();
         extentReports.attachReporter(sparkReporter);
         extentReports.setSystemInfo("OS", System.getProperty("os.name"));
-        extentReports.setSystemInfo("Tester", "Your Name");
+        extentReports.setSystemInfo("Tester", "Rafeek");
         extentReports.setSystemInfo("Browser", ConfigReader.getBrowserType());
 
         // Customize Report
